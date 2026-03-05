@@ -1,6 +1,9 @@
-from typing import Tuple
+from collections import defaultdict
+from typing import Tuple, List
+import random
 
-from policy import DeterministicPolicy
+from policy import DeterministicPolicy, StochasticPolicy
+from qtable import QTable
 
 type State = Tuple[int, int]
 
@@ -15,12 +18,32 @@ class TabularDeterministicPolicy(DeterministicPolicy):
         self.policy_table[state] = action
 
 
-# class TabularStochasticPolicy(StochasticPolicy):
-#     def __init__(self):
-#         self.policy_table = {}
+class TabularStochasticPolicy(StochasticPolicy):
+    def __init__(self):
+        self.policy_table = defaultdict(dict)
 
-#     def select_action(self, state: State) -> str:
+    def select_action(self, state: State) -> str:
+        actions_probs = self.policy_table[state]
 
-#     def update(self, states: List[State], actions: List[str], rewards: List[float]) -> None:
+        actions = list(actions_probs.keys())
+        probabilities = list(actions_probs.values())
 
-#     def get_probability(self, state: State, action: str) -> float:
+        return random.choices(actions, probabilities)[0]
+
+    def update(self, state: State, actions: List[str], qfunction: type[QTable], epsilon: float):
+        if not actions:
+            return
+
+        best_action = qfunction.get_argmax_q_value(state, actions)
+        n = len(actions)
+
+        self.policy_table[state] = {}
+
+        for action in actions:
+            if action == best_action:
+                self.policy_table[state][action] = 1 - epsilon + (epsilon / n)
+            else:
+                self.policy_table[state][action] = epsilon / n
+
+    def get_probability(self, state: State, action: str) -> float:
+        return self.policy_table[state].get(action, 0.0)

@@ -1,16 +1,21 @@
 from abc import abstractmethod
 from itertools import count
+from typing import Tuple
 
 from model_free_learner import ModelFreeLearner
+from task2.multi_armed_bandit import MultiArmedBandit
+from mdp import MDP
+from qtable import QTable
 
+type State = Tuple[int, int]
 
 class TemporalDifferenceLearner(ModelFreeLearner):
-    def __init__(self, mdp, qfunction, alpha=0.1):
+    def __init__(self, mdp: type[MDP], bandit: type[MultiArmedBandit], qfunction: type[QTable]):
         self.mdp = mdp
+        self.bandit = bandit
         self.qfunction = qfunction
-        self.alpha = alpha
 
-    def execute(self, episodes=2000, max_episode_length=float("inf")):
+    def execute(self, episodes: int = 2000, max_episode_length: float = float("inf")):
         episode_rewards = []
         for episode in range(episodes):
             state = self.mdp.get_initial_state()
@@ -22,11 +27,8 @@ class TemporalDifferenceLearner(ModelFreeLearner):
                 (next_state, reward, done) = self.mdp.execute(state, action)
                 actions = self.mdp.get_actions(next_state)
                 next_action = self.bandit.select(next_state, actions, self.qfunction)
-                delta = self.get_delta(
-                    reward, state, action, next_state, next_action, done
-                )
-                updated_target = self.qfunction.get_q_value(state, action) + delta
-                self.qfunction.update(state, action, updated_target, alpha=self.alpha)
+                delta = self.get_delta(reward, state, action, next_state, next_action, done)
+                self.qfunction.update(state, action, delta)
 
                 state = next_state
                 action = next_action
@@ -39,7 +41,7 @@ class TemporalDifferenceLearner(ModelFreeLearner):
 
         return episode_rewards
 
-    def get_delta(self, reward, state, action, next_state, next_action, done):
+    def get_delta(self, reward: float, state: State, action: str, next_state: State, next_action: str, done: bool) -> float:
         """ Calculate the delta for the update """
         q_value = self.qfunction.get_q_value(state, action)
         next_state_value = self.state_value(next_state, next_action)
@@ -51,6 +53,6 @@ class TemporalDifferenceLearner(ModelFreeLearner):
         return delta
 
     @abstractmethod
-    def state_value(self, state, action):
+    def state_value(self, state: State, action: str) -> float:
         """ Get the value of a state """
         pass

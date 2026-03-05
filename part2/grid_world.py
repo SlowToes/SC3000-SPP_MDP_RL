@@ -1,5 +1,5 @@
-import random
 from collections import defaultdict
+import random
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
@@ -75,7 +75,7 @@ class GridWorld(MDP):
             transitions += self.valid_add(state, (x - 1, y), self.noise)
 
         # Merge any duplicate outcomes
-        merged = defaultdict(lambda: 0.0)
+        merged = defaultdict(float)
         for (state, probability) in transitions:
             merged[state] = merged[state] + probability
 
@@ -119,19 +119,40 @@ class GridWorld(MDP):
     
     def get_goal_state(self) -> State:
         return self.GOAL
+    
+    def execute(self, state: State, action: str) -> Tuple[State, float, bool]:
+        """ Sample one environment step and return (next_state, reward, done) """
+        if self.is_terminal(state):
+            return state, 0.0, True
+
+        transitions = self.get_transitions(state, action)
+        if not transitions:
+            return state, 0.0, self.is_terminal(state)
+
+        sample = random.random()
+        cumulative = 0.0
+        next_state = transitions[-1][0]
+        for candidate_state, probability in transitions:
+            cumulative += probability
+            if sample <= cumulative:
+                next_state = candidate_state
+                break
+
+        reward = self.get_reward(state, action, next_state)
+        done = self.is_terminal(next_state)
+        return next_state, reward, done
 
     # =========================================================================================
     # Methods for visualisation
     # =========================================================================================
 
     def _base_grid_labels(self):
-        """
-        Create a grid used for visualisation.
-
-        Cell labels:
-            0 = normal cell
-            1 = roadblock
-            2 = goal
+        """ Create a grid used for visualisation.
+            
+            Cell labels:
+                0 = normal cell,
+                1 = roadblock,
+                2 = goal
         """
         labels = np.zeros((self.GRID_SIZE, self.GRID_SIZE), dtype=int)
         for (x, y) in self.roadblocks:
@@ -169,11 +190,8 @@ class GridWorld(MDP):
                 if state == self.get_goal_state():
                     ax.text(y, x, "+10", ha="center", va="center", fontsize=12, color="black")
                     continue
-
-                if hasattr(values, "get_value"):
-                    value = values.get_value(state)
-                else:
-                    value = values.get(state, 0.0)
+                
+                value = values.get_value(state)
                 ax.text(y, x, f"{value:+.2f}", ha="center", va="center", fontsize=11, color="black")
 
         ax.set_title(title, fontsize=15)
@@ -200,17 +218,30 @@ class GridWorld(MDP):
                 if state == self.get_goal_state():
                     ax.text(y, x, "G", ha="center", va="center", fontsize=16, color="black", fontweight="bold")
                     continue
-
-                if hasattr(policy, "policy_table"):
-                    action = policy.policy_table.get(state, "?")
-                elif hasattr(policy, "select_action"):
-                    try:
-                        action = policy.select_action(state)
-                    except Exception:
-                        action = "?"
-                else:
-                    action = policy.get(state, "?")
+                action = policy.policy_table.get(state, "?")
                 ax.text(y, x, arrows.get(action, "?"), ha="center", va="center", fontsize=18, color="black")
+
+        ax.set_title(title, fontsize=15)
+        plt.tight_layout()
+        plt.show()
+
+    def visualise_q_function(self, qfunction, title="Q-Function"):
+        """ Display max_a Q(s,a) for each state on the grid. """
+        fig, ax = plt.subplots(figsize=(6, 6))
+        self._draw_grid_background(ax)
+
+        for x in range(self.GRID_SIZE):
+            for y in range(self.GRID_SIZE):
+                state = (x, y)
+                if state in self.roadblocks:
+                    continue
+                if state == self.get_goal_state():
+                    ax.text(y, x, "+10", ha="center", va="center", fontsize=12, color="black")
+                    continue
+
+                actions = self.get_actions(state)
+                max_q = qfunction.get_max_q_value(state, actions)
+                ax.text(y, x, f"{max_q:+.2f}", ha="center", va="center", fontsize=11, color="black")
 
         ax.set_title(title, fontsize=15)
         plt.tight_layout()

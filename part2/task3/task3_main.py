@@ -1,26 +1,30 @@
+from pathlib import Path
+import sys
+
+# Ensure sibling modules under part2 are importable when this file is run directly
+CURRENT_DIR = Path(__file__).resolve().parent
+PART2_DIR = CURRENT_DIR.parent
+if str(PART2_DIR) not in sys.path:
+    sys.path.insert(0, str(PART2_DIR))
+
 from grid_world import GridWorld
-from epsilon_greedy import EpsilonGreedy
 from qtable import QTable
 from qlearning import QLearning
-
-
-def extract_greedy_outputs(env: GridWorld, qfunction: QTable):
-    policy = {}
-    state_values = {}
-    for state in env.get_states():
-        actions = env.get_actions(state)
-        if not actions:
-            state_values[state] = 0.0
-            continue
-        best_action = qfunction.get_argmax_q(state, actions)
-        policy[state] = best_action
-        state_values[state] = qfunction.get_q_value(state, best_action)
-    return policy, state_values
+from tabular_policy import TabularStochasticPolicy
+from task2.epsilon_greedy import EpsilonGreedy
 
 
 gridworld = GridWorld()
 qfunction = QTable()
-QLearning(gridworld, EpsilonGreedy(epsilon=0.1), qfunction, alpha=0.1).execute(episodes=20000)
-learned_policy, learned_values = extract_greedy_outputs(gridworld, qfunction)
-gridworld.visualise_value_function(learned_values, "Task 3 - Q-Learning State Values (max_a Q(s,a))")
-gridworld.visualise_policy(learned_policy, "Task 3 - Learned Policy (Q-Learning)")
+QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=100)
+gridworld.visualise_q_function(qfunction)
+
+# Build a deterministic greedy policy from learned Q-values for visualisation.
+policy = TabularStochasticPolicy()
+for state in gridworld.get_states():
+    actions = gridworld.get_actions(state)
+    if not actions:
+        continue
+    policy.update(state, actions, qfunction, epsilon=0.1)
+
+gridworld.visualise_policy(policy)

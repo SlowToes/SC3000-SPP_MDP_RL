@@ -1,5 +1,4 @@
 from collections import defaultdict
-import this
 from typing import Dict, Tuple
 
 from value_function import ValueFunction

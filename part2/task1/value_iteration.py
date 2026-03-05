@@ -33,10 +33,10 @@ class ValueIteration:
                             )
                         )
 
-                    qtable.update(state, action, new_value)
+                    qtable.update_value(state, action, new_value)
 
                 # V(s) = max_a Q(sa)
-                max_q = qtable.get_max_q(state, actions)
+                max_q = qtable.get_max_q_value(state, actions)
                 delta = max(delta, abs(self.values.get_value(state) - max_q))
                 new_values.update(state, max_q)
 
