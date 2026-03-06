@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import List, Tuple
 
-from qtable import QTable
+from part2.qtable import QTable
 
 type State = Tuple[int, int]
 

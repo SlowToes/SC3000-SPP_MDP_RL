@@ -2,7 +2,7 @@ from collections import defaultdict
 import random
 from typing import List, Tuple
 
-from qfunction import QFunction
+from part2.qfunction import QFunction
 
 type State = Tuple[int, int]
 

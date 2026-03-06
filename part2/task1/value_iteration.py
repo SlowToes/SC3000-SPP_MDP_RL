@@ -1,6 +1,6 @@
-from mdp import MDP
-from tabular_value_function import TabularValueFunction
-from qtable import QTable
+from part2.mdp import MDP
+from part2.task1.tabular_value_function import TabularValueFunction
+from part2.qtable import QTable
 
 
 class ValueIteration:

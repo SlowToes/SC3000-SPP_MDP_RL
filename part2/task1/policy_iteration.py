@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from mdp import MDP
-from tabular_policy import TabularDeterministicPolicy
-from tabular_value_function import TabularValueFunction
+from part2.mdp import MDP
+from part2.tabular_policy import TabularDeterministicPolicy
+from part2.task1.tabular_value_function import TabularValueFunction
 
 
 class PolicyIteration:

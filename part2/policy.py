@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Tuple, List
+from typing import Tuple
 
 type State = Tuple[int, int]
 
@@ -17,13 +17,13 @@ class DeterministicPolicy(Policy):
         pass
 
 
-class StochasticPolicy(Policy):
-    @abstractmethod
-    def update(self, states: List[State], actions: List[str], rewards: List[float]) -> None:
-        """ Update the policy for the given state to select actions according to the given probabilities """
-        pass
+# class StochasticPolicy(Policy):
+#     @abstractmethod
+#     def update(self, states: List[State], actions: List[str], rewards: List[float]) -> None:
+#         """ Update the policy for the given state to select actions according to the given probabilities """
+#         pass
 
-    @abstractmethod
-    def get_probability(self, state: State, action: str) -> float:
-        """ Return the probability of selecting action from state according to this policy """
-        pass
+#     @abstractmethod
+#     def get_probability(self, state: State, action: str) -> float:
+#         """ Return the probability of selecting action from state according to this policy """
+#         pass

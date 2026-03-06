@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, Tuple
 
-from value_function import ValueFunction
+from part2.task1.value_function import ValueFunction
 
 type State = Tuple[int, int]
 

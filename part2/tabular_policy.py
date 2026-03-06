@@ -1,9 +1,9 @@
-from collections import defaultdict
-from typing import Tuple, List
-import random
+# from collections import defaultdict
+from typing import Tuple
+# import random
 
-from policy import DeterministicPolicy, StochasticPolicy
-from qtable import QTable
+from part2.policy import DeterministicPolicy
+# from part2.qtable import QTable
 
 type State = Tuple[int, int]
 
@@ -18,32 +18,32 @@ class TabularDeterministicPolicy(DeterministicPolicy):
         self.policy_table[state] = action
 
 
-class TabularStochasticPolicy(StochasticPolicy):
-    def __init__(self):
-        self.policy_table = defaultdict(dict)
+# class TabularStochasticPolicy(StochasticPolicy):
+#     def __init__(self):
+#         self.policy_table = defaultdict(dict)
 
-    def select_action(self, state: State) -> str:
-        actions_probs = self.policy_table[state]
+#     def select_action(self, state: State) -> str:
+#         actions_probs = self.policy_table[state]
 
-        actions = list(actions_probs.keys())
-        probabilities = list(actions_probs.values())
+#         actions = list(actions_probs.keys())
+#         probabilities = list(actions_probs.values())
 
-        return random.choices(actions, probabilities)[0]
+#         return random.choices(actions, probabilities)[0]
 
-    def update(self, state: State, actions: List[str], qfunction: type[QTable], epsilon: float):
-        if not actions:
-            return
+#     def update(self, state: State, actions: List[str], qfunction: type[QTable], epsilon: float):
+#         if not actions:
+#             return
 
-        best_action = qfunction.get_argmax_q_value(state, actions)
-        n = len(actions)
+#         best_action = qfunction.get_argmax_q_value(state, actions)
+#         n = len(actions)
 
-        self.policy_table[state] = {}
+#         self.policy_table[state] = {}
 
-        for action in actions:
-            if action == best_action:
-                self.policy_table[state][action] = 1 - epsilon + (epsilon / n)
-            else:
-                self.policy_table[state][action] = epsilon / n
+#         for action in actions:
+#             if action == best_action:
+#                 self.policy_table[state][action] = 1 - epsilon + (epsilon / n)
+#             else:
+#                 self.policy_table[state][action] = epsilon / n
 
-    def get_probability(self, state: State, action: str) -> float:
-        return self.policy_table[state].get(action, 0.0)
+#     def get_probability(self, state: State, action: str) -> float:
+#         return self.policy_table[state].get(action, 0.0)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-from mdp import MDP
+from part2.mdp import MDP
 
 type State = Tuple[int, int]
 type Transition = Tuple[State, float]

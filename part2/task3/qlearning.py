@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from temporal_difference_learner import TemporalDifferenceLearner
+from part2.task3.temporal_difference_learner import TemporalDifferenceLearner
 
 type State = Tuple[int, int]
 

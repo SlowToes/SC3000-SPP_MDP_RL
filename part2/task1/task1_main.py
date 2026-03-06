@@ -1,17 +1,8 @@
-from pathlib import Path
-import sys
-
-# Ensure sibling modules under part2 are importable when this file is run directly
-CURRENT_DIR = Path(__file__).resolve().parent
-PART2_DIR = CURRENT_DIR.parent
-if str(PART2_DIR) not in sys.path:
-    sys.path.insert(0, str(PART2_DIR))
-
-from grid_world import GridWorld
-from tabular_policy import TabularDeterministicPolicy
-from policy_iteration import PolicyIteration
-from tabular_value_function import TabularValueFunction
-from value_iteration import ValueIteration
+from part2.grid_world import GridWorld
+from part2.tabular_policy import TabularDeterministicPolicy
+from part2.task1.policy_iteration import PolicyIteration
+from part2.task1.tabular_value_function import TabularValueFunction
+from part2.task1.value_iteration import ValueIteration
 
 
 def part1():

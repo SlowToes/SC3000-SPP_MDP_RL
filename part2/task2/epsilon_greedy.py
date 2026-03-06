@@ -1,9 +1,8 @@
 import random
 from typing import List, Optional, Tuple
 
-from task2.multi_armed_bandit import MultiArmedBandit
-
-from qtable import QTable
+from part2.task2.multi_armed_bandit import MultiArmedBandit
+from part2.qtable import QTable
 
 type State = Tuple[int, int]
 

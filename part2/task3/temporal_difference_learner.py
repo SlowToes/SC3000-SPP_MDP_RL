@@ -2,10 +2,10 @@ from abc import abstractmethod
 from itertools import count
 from typing import Tuple
 
-from model_free_learner import ModelFreeLearner
-from task2.multi_armed_bandit import MultiArmedBandit
-from mdp import MDP
-from qtable import QTable
+from part2.task2.model_free_learner import ModelFreeLearner
+from part2.task2.multi_armed_bandit import MultiArmedBandit
+from part2.mdp import MDP
+from part2.qtable import QTable
 
 type State = Tuple[int, int]
 
