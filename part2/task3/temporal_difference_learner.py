@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from itertools import count
 from typing import Tuple
 
@@ -9,8 +9,8 @@ from part2.qtable import QTable
 
 type State = Tuple[int, int]
 
-class TemporalDifferenceLearner(ModelFreeLearner):
-    def __init__(self, mdp: type[MDP], bandit: type[MultiArmedBandit], qfunction: type[QTable]):
+class TemporalDifferenceLearner(ModelFreeLearner, ABC):
+    def __init__(self, mdp: MDP, bandit: MultiArmedBandit, qfunction: QTable):
         self.mdp = mdp
         self.bandit = bandit
         self.qfunction = qfunction
@@ -42,7 +42,7 @@ class TemporalDifferenceLearner(ModelFreeLearner):
         return episode_rewards
 
     def get_delta(self, reward: float, state: State, action: str, next_state: State, next_action: str, done: bool) -> float:
-        """ Calculate the delta for the update """
+        """Calculate the delta for the update."""
         q_value = self.qfunction.get_q_value(state, action)
         next_state_value = self.state_value(next_state, next_action)
         delta = (
@@ -54,5 +54,5 @@ class TemporalDifferenceLearner(ModelFreeLearner):
 
     @abstractmethod
     def state_value(self, state: State, action: str) -> float:
-        """ Get the value of a state """
+        """Get the value of a state."""
         pass

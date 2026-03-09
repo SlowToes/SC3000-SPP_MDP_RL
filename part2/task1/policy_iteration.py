@@ -6,12 +6,12 @@ from part2.task1.tabular_value_function import TabularValueFunction
 
 
 class PolicyIteration:
-    def __init__(self, mdp: type[MDP], policy: type[TabularDeterministicPolicy]):
+    def __init__(self, mdp: MDP, policy: TabularDeterministicPolicy):
         self.mdp = mdp
         self.policy = policy
 
-    def policy_evaluation(self, policy: type[TabularDeterministicPolicy], values: type[TabularValueFunction], theta: float = 1e-6) -> type[TabularValueFunction]:
-        """ Evaluate a fixed policy until the value function converges """
+    def policy_evaluation(self, policy: TabularDeterministicPolicy, values: TabularValueFunction, theta: float = 1e-6) -> TabularValueFunction:
+        """Evaluate a fixed policy until the value function converges."""
         while True:
             delta = 0.0
             new_values = TabularValueFunction()
@@ -28,14 +28,14 @@ class PolicyIteration:
 
             values.merge(new_values)
 
-            # terminate if the value function has converged
+            # Terminate if the value function has converged
             if delta < theta:
                 break
 
         return values
 
     def policy_iteration(self, max_iterations: int = 1000, theta: float = 1e-6) -> Tuple[int, TabularValueFunction]:
-        """ Run policy iteration and return (iterations, converged_values) """
+        """Run policy iteration and return (iterations, converged_values)."""
         values = TabularValueFunction()
 
         # Initialise all non-terminal states with a default valid action.

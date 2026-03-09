@@ -121,7 +121,7 @@ class GridWorld(MDP):
         return self.GOAL
     
     def execute(self, state: State, action: str) -> Tuple[State, float, bool]:
-        """ Sample one environment step and return (next_state, reward, done) """
+        """Sample one environment step and return (next_state, reward, done)."""
         if self.is_terminal(state):
             return state, 0.0, True
 
@@ -147,7 +147,7 @@ class GridWorld(MDP):
     # =========================================================================================
 
     def _base_grid_labels(self):
-        """ Create a grid used for visualisation.
+        """Create a grid used for visualisation.
             
             Cell labels:
                 0 = normal cell,
@@ -162,7 +162,7 @@ class GridWorld(MDP):
         return labels
 
     def _draw_grid_background(self, ax):
-        """ Draw the coloured grid and cell boundaries """
+        """Draw the coloured grid and cell boundaries."""
         labels = self._base_grid_labels()
         cmap = ListedColormap(["#eeeeee", "#8a8a8a", "#4caf50"])
         ax.imshow(labels, origin="lower", cmap=cmap, vmin=0, vmax=2)
@@ -178,7 +178,7 @@ class GridWorld(MDP):
         ax.set_ylim(-0.5, self.GRID_SIZE - 0.5)
 
     def visualise_value_function(self, values, title="Value Function"):
-        """ Display a matplotlib figure of the value function on the grid """
+        """Display a matplotlib figure of the value function on the grid."""
         fig, ax = plt.subplots(figsize=(6, 6))
         self._draw_grid_background(ax)
 
@@ -199,7 +199,7 @@ class GridWorld(MDP):
         plt.show()
 
     def visualise_policy(self, policy, title="Policy"):
-        """ Display a matplotlib figure of a deterministic policy on the grid """
+        """Display a matplotlib figure of a deterministic policy on the grid."""
         fig, ax = plt.subplots(figsize=(6, 6))
         self._draw_grid_background(ax)
 
@@ -226,7 +226,7 @@ class GridWorld(MDP):
         plt.show()
 
     def visualise_q_function(self, qfunction, title="Q-Function"):
-        """ Display max_a Q(s,a) for each state on the grid. """
+        """Display max_a Q(s,a) for each state on the grid."""
         fig, ax = plt.subplots(figsize=(6, 6))
         self._draw_grid_background(ax)
 

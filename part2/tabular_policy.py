@@ -30,7 +30,7 @@ class TabularDeterministicPolicy(DeterministicPolicy):
 
 #         return random.choices(actions, probabilities)[0]
 
-#     def update(self, state: State, actions: List[str], qfunction: type[QTable], epsilon: float):
+#     def update(self, state: State, actions: List[str], qfunction: QTable, epsilon: float):
 #         if not actions:
 #             return
 

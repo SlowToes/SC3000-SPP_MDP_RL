@@ -9,7 +9,7 @@ from part2.qtable import QTable
 type State = Tuple[int, int]
 
 class MonteCarloControl(ModelFreeLearner):
-    def __init__(self, mdp: type[MDP], bandit: type[MultiArmedBandit], qfunction: type[QTable]):
+    def __init__(self, mdp: MDP, bandit: MultiArmedBandit, qfunction: QTable):
         self.mdp = mdp
         self.bandit = bandit
         self.qfunction = qfunction

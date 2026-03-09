@@ -13,7 +13,7 @@ class EpsilonGreedy(MultiArmedBandit):
     def reset(self) -> None:
         pass
 
-    def select(self, state: State, actions: List[str], qfunction: type[QTable]) -> Optional[str]:
+    def select(self, state: State, actions: List[str], qfunction: QTable) -> Optional[str]:
         if not actions:
             return None
 

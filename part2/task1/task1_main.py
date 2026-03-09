@@ -15,7 +15,6 @@ def part1():
     iterations = ValueIteration(gridworld, values).value_iteration(max_iterations=100)
     policy = values.extract_policy(gridworld)
 
-    print(f"Value Iteration completed in {iterations} iterations.")
     gridworld.visualise_value_function(values, f"Value function after iteration {iterations}")
     gridworld.visualise_policy(policy, f"Policy after iteration {iterations}")
 
@@ -29,15 +28,9 @@ def part2():
     policy = TabularDeterministicPolicy()
     iterations, values = PolicyIteration(gridworld, policy).policy_iteration(max_iterations=100)
 
-    print(f"Policy Iteration completed in {iterations} iterations.")
     gridworld.visualise_value_function(values, f"Value function after iteration {iterations}")
     gridworld.visualise_policy(policy, f"Policy after iteration {iterations}")
 
 
-def main():
-    part1()
-    part2()
-
-
-if __name__ == "__main__":
-    main()
+part1()
+part2()

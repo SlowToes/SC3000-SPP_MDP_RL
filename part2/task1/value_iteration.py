@@ -4,11 +4,12 @@ from part2.qtable import QTable
 
 
 class ValueIteration:
-    def __init__(self, mdp: type[MDP], values: type[TabularValueFunction]):
+    def __init__(self, mdp: MDP, values: TabularValueFunction):
         self.mdp = mdp
         self.values = values
 
     def value_iteration(self, max_iterations: int = 1000, theta: float = 1e-6) -> int:
+        """Run value iteration and return the number of iterations."""
         for i in range(max_iterations):
             delta = 0.0
             new_values = TabularValueFunction()
