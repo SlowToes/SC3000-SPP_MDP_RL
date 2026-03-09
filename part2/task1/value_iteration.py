@@ -8,7 +8,7 @@ class ValueIteration:
         self.mdp = mdp
         self.values = values
 
-    def value_iteration(self, max_iterations: int = 1000, theta: float = 1e-6) -> int:
+    def value_iteration(self, max_iterations, theta: float = 1e-6) -> int:
         """Run value iteration and return the number of iterations."""
         for i in range(max_iterations):
             delta = 0.0

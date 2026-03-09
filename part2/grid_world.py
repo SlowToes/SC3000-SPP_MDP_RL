@@ -41,8 +41,21 @@ class GridWorld(MDP):
     def get_actions(self, state: State) -> List[str]:
         if state == self.get_goal_state():
             return []
-        else:
-            return [self.UP, self.DOWN, self.LEFT, self.RIGHT]
+
+        x, y = state
+        candidate_actions = {
+            self.UP: (x + 1, y),
+            self.DOWN: (x - 1, y),
+            self.LEFT: (x, y - 1),
+            self.RIGHT: (x, y + 1),
+        }
+
+        valid_actions = []
+        for action, next_state in candidate_actions.items():
+            if self.is_valid_state(next_state) and next_state not in self.roadblocks:
+                valid_actions.append(action)
+
+        return valid_actions
 
     def get_transitions(self, state: State, action: str) -> List[Transition]:
         transitions = []

@@ -12,7 +12,7 @@ def part1():
     gridworld.noise = 0.0
 
     values = TabularValueFunction()
-    iterations = ValueIteration(gridworld, values).value_iteration(max_iterations=100)
+    iterations = ValueIteration(gridworld, values).value_iteration(max_iterations=1000)
     policy = values.extract_policy(gridworld)
 
     gridworld.visualise_value_function(values, f"Value function after iteration {iterations}")
@@ -26,7 +26,7 @@ def part2():
     gridworld.noise = 0.0
 
     policy = TabularDeterministicPolicy()
-    iterations, values = PolicyIteration(gridworld, policy).policy_iteration(max_iterations=100)
+    iterations, values = PolicyIteration(gridworld, policy).policy_iteration(max_iterations=1000)
 
     gridworld.visualise_value_function(values, f"Value function after iteration {iterations}")
     gridworld.visualise_policy(policy, f"Policy after iteration {iterations}")

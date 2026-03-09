@@ -8,7 +8,7 @@ from part2.task2.epsilon_greedy import EpsilonGreedy
 # GridWorld noise is defaulted to 0.1
 gridworld = GridWorld()
 qfunction = QTable()
-QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=10000)
+QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=20000)
 gridworld.visualise_q_function(qfunction)
 
 # Build a deterministic greedy policy from learned Q-values for visualisation.

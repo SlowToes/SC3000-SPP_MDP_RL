@@ -15,7 +15,7 @@ class TemporalDifferenceLearner(ModelFreeLearner, ABC):
         self.bandit = bandit
         self.qfunction = qfunction
 
-    def execute(self, episodes: int = 2000, max_episode_length: float = float("inf")):
+    def execute(self, episodes: int, max_episode_length : int = 500):
         episode_rewards = []
         for episode in range(episodes):
             state = self.mdp.get_initial_state()
@@ -34,7 +34,7 @@ class TemporalDifferenceLearner(ModelFreeLearner, ABC):
                 action = next_action
                 episode_reward += reward * (self.mdp.get_discount_factor() ** step)
 
-                if done or step == max_episode_length:
+                if done or step >= max_episode_length - 1:
                     break
 
             episode_rewards.append(episode_reward)

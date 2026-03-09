@@ -34,7 +34,7 @@ class PolicyIteration:
 
         return values
 
-    def policy_iteration(self, max_iterations: int = 1000, theta: float = 1e-6) -> Tuple[int, TabularValueFunction]:
+    def policy_iteration(self, max_iterations, theta: float = 1e-6) -> Tuple[int, TabularValueFunction]:
         """Run policy iteration and return (iterations, converged_values)."""
         values = TabularValueFunction()
 
