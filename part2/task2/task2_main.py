@@ -12,7 +12,7 @@ gridworld = GridWorld()
 qfunction = QTable()
 
 # Run the Monte Carlo control algorithm.
-MonteCarloControl(gridworld, EpsilonGreedy(), qfunction).execute(episodes=10000)
+MonteCarloControl(gridworld, EpsilonGreedy(), qfunction).execute(episodes=500)
 
 # Visualise the Q-function.
 gridworld.visualise_q_function(qfunction)
