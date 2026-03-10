@@ -34,7 +34,7 @@ part2/
 
 ### Task 1 – Value Iteration & Policy Iteration
 
-Solves the grid world as an MDP with **known, deterministic** transitions (noise = 0). Computes optimal value functions and policies using both Value Iteration and Policy Iteration, then compares the resulting policies.
+Solves the grid world as an MDP. Computes optimal value functions and policies using both Value Iteration and Policy Iteration, then compares the resulting policies.
 
 ### Task 2 – Monte Carlo Control
 

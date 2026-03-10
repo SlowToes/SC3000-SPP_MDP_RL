@@ -6,7 +6,7 @@ type State = Tuple[int, int]
 class QFunction(ABC):
     @abstractmethod
     def update(self, state: State, action: str, delta: float) -> None:
-        """Update Q(s, a) using: Q(s,a) ← Q(s,a) + α * delta."""
+        """Update Q(s, a) using: Q(s,a) ← Q(s,a) + alpha * delta."""
         pass
 
     @abstractmethod

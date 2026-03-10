@@ -14,7 +14,7 @@ class MonteCarloControl(ModelFreeLearner):
         self.bandit = bandit
         self.qfunction = qfunction
 
-    def execute(self, episodes: int, max_episode_length: int = 500):
+    def execute(self, episodes: int, max_episode_length: int = 500) -> List[float]:
         returns: dict[Tuple[State, str], List[float]] = defaultdict(list)
         gamma = self.mdp.get_discount_factor()
         episode_rewards = []

@@ -1,23 +1,24 @@
 from part2.grid_world import GridWorld
 from part2.qtable import QTable
-from part2.task3.qlearning import QLearning
-from part2.tabular_policy import TabularDeterministicPolicy
 from part2.task2.epsilon_greedy import EpsilonGreedy
+from part2.task3.qlearning import QLearning
+from part2.task3.q_policy import QPolicy
 
 
-# GridWorld noise is defaulted to 0.1
+# Initialise the gridworld.
 gridworld = GridWorld()
+
+# Initialise the Q-function.
 qfunction = QTable()
-QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=20000)
+
+# Run the Q-learning algorithm. 
+episode_returns = QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=10000)
+
+# Visualise the Q-function.
 gridworld.visualise_q_function(qfunction)
 
-# Build a deterministic greedy policy from learned Q-values for visualisation.
-policy = TabularDeterministicPolicy()
-for state in gridworld.get_states():
-    actions = gridworld.get_actions(state)
-    if not actions:
-        continue
-    best_action = qfunction.get_argmax_q_value(state, actions)
-    policy.update(state, best_action)
+# Extract the policy from the Q-function.
+policy = QPolicy(qfunction)
 
+# Visualise the policy.
 gridworld.visualise_policy(policy)

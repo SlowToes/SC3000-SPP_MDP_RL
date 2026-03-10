@@ -143,11 +143,11 @@ class GridWorld(MDP):
             return state, 0.0, self.is_terminal(state)
 
         sample = random.random()
-        cumulative = 0.0
+        cumulative_probability = 0.0
         next_state = transitions[-1][0]
         for candidate_state, probability in transitions:
-            cumulative += probability
-            if sample <= cumulative:
+            cumulative_probability += probability
+            if sample <= cumulative_probability:
                 next_state = candidate_state
                 break
 

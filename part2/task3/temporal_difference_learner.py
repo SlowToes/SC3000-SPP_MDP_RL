@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from itertools import count
-from typing import Tuple
+from typing import List, Tuple
 
 from part2.task2.model_free_learner import ModelFreeLearner
 from part2.task2.multi_armed_bandit import MultiArmedBandit
@@ -15,7 +15,7 @@ class TemporalDifferenceLearner(ModelFreeLearner, ABC):
         self.bandit = bandit
         self.qfunction = qfunction
 
-    def execute(self, episodes: int, max_episode_length : int = 500):
+    def execute(self, episodes: int, max_episode_length : int = 500) -> List[float]:
         episode_rewards = []
         for episode in range(episodes):
             state = self.mdp.get_initial_state()
