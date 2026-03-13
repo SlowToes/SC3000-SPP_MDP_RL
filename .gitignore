@@ -1,5 +1,6 @@
 /.cursor
-/part2.py
+/part1/__pycache__/
+/part1/small
 /part2/__pycache__/
 /part2/task1/__pycache__/
 /part2/task2/__pycache__/
