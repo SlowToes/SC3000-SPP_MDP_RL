@@ -1,111 +1,225 @@
-import json
 import heapq
-import math
+import json
+from collections import defaultdict
 
 
 def load_instance():
+    """Load graph, distance, and energy dictionaries from JSON files."""
     with open("G.json") as f:
         G = json.load(f)
-
     with open("Dist.json") as f:
         Dist = json.load(f)
-
     with open("Cost.json") as f:
         Cost = json.load(f)
-
-    with open("Coord.json") as f:
-        Coord = json.load(f)
-
-    return G, Dist, Cost, Coord
+    return G, Dist, Cost
 
 
-def euclidean_heuristic(Coord, node, goal):
-    x1, y1 = Coord[node]
-    x2, y2 = Coord[goal]
-    # Make robust in case JSON stores numbers as strings
-    x1, y1, x2, y2 = float(x1), float(y1), float(x2), float(y2)
-    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+def build_graphs(G, Dist, Cost):
+    """Build forward and reverse adjacency structures used by A* pruning.
+
+    - Forward adjacency drives state expansion.
+    - Reverse energy adjacency gives feasibility bounds.
+    - Reverse distance adjacency gives an admissible distance heuristic.
+    """
+    adj = defaultdict(list)
+    rev_energy = defaultdict(list)
+    rev_dist = defaultdict(list)
+    for u, neighbors in G.items():
+        for v in neighbors:
+            key = f"{u},{v}"
+            d = Dist[key]
+            c = Cost[key]
+            adj[u].append((v, d, c))
+            rev_energy[v].append((u, c))
+            rev_dist[v].append((u, d))
+    return adj, rev_energy, rev_dist
 
 
-def reconstruct_path(parent, start_state, goal_state):
-    nodes = []
-    cur = goal_state
-    while cur != start_state:
-        nodes.append(cur[0])
-        cur = parent[cur]
-    nodes.append(start_state[0])
-    nodes.reverse()
-    return nodes
+def reverse_dijkstra_to_goal(goal, rev_adj):
+    """Compute shortest reversed-path costs from all nodes to goal.
+
+    Running Dijkstra from the goal on reversed edges efficiently computes
+    exact lower bounds for whichever edge weight (energy or distance)
+    is supplied in rev_adj.
+    """
+    best = {goal: 0}
+    pq = [(0, goal)]
+    while pq:
+        cur, node = heapq.heappop(pq)
+        if cur != best.get(node):
+            continue
+        for prev_node, w in rev_adj.get(node, []):
+            nxt = cur + w
+            if nxt < best.get(prev_node, float("inf")):
+                best[prev_node] = nxt
+                heapq.heappush(pq, (nxt, prev_node))
+    return best
+
+
+def is_dominated(path_states, state_ids, new_dist, new_energy):
+    """Return True if an existing alive state dominates the candidate state."""
+    for state_id in state_ids:
+        if not path_states[state_id]["alive"]:
+            continue
+        if (
+            path_states[state_id]["dist"] <= new_dist
+            and path_states[state_id]["energy"] <= new_energy
+        ):
+            return True
+    return False
+
+
+def remove_dominated(path_states, state_ids, new_dist, new_energy):
+    """Deactivate states dominated by the candidate state and keep survivors."""
+    kept = []
+    for state_id in state_ids:
+        if not path_states[state_id]["alive"]:
+            continue
+        if (
+            new_dist <= path_states[state_id]["dist"]
+            and new_energy <= path_states[state_id]["energy"]
+        ):
+            path_states[state_id]["alive"] = False
+        else:
+            kept.append(state_id)
+    return kept
+
+
+def reconstruct_path(path_states, goal_state_id):
+    """Reconstruct full path by walking parent state pointers backward."""
+    path = []
+    cur = goal_state_id
+    while cur is not None:
+        path.append(path_states[cur]["node"])
+        cur = path_states[cur]["parent"]
+    path.reverse()
+    return path
+
+
+def astar_energy_constrained(G, Dist, Cost, start, goal, budget):
+    """A* search with an energy budget using nondominated states per node.
+
+    Compared with UCS in Task 2, A* adds an admissible distance heuristic to
+    prioritize states that are likely closer to the goal, reducing expansions
+    while preserving optimality under the same energy constraint.
+    """
+    adj, rev_energy, rev_dist = build_graphs(G, Dist, Cost)
+
+    min_energy_to_goal = reverse_dijkstra_to_goal(goal, rev_energy)
+    # Fast infeasibility check: cannot satisfy budget even with best-case energy.
+    if start not in min_energy_to_goal or min_energy_to_goal[start] > budget:
+        return None, None, None
+
+    # Strong admissible heuristic: unconstrained shortest distance to goal.
+    min_dist_to_goal = reverse_dijkstra_to_goal(goal, rev_dist)
+    if start not in min_dist_to_goal:
+        return None, None, None
+
+    path_states = []
+    nondominated_state_ids_by_node = defaultdict(list)
+    pq = []
+
+    start_id = 0
+    path_states.append(
+        {"node": start, "dist": 0.0, "energy": 0, "parent": None, "alive": True}
+    )
+    nondominated_state_ids_by_node[start].append(start_id)
+    h0 = min_dist_to_goal[start]
+    # Priority tuple: (f = g + h, g, state_id) for deterministic tie handling.
+    heapq.heappush(pq, (h0, 0.0, start_id))
+
+    while pq:
+        f, g, state_id = heapq.heappop(pq)
+        if not path_states[state_id]["alive"]:
+            continue
+        # Drop stale queue entries for states already superseded.
+        if g != path_states[state_id]["dist"]:
+            continue
+
+        node = path_states[state_id]["node"]
+        energy_so_far = path_states[state_id]["energy"]
+
+        if node == goal:
+            path = reconstruct_path(path_states, state_id)
+            return path, g, energy_so_far
+
+        for nbr, step_dist, step_energy in adj.get(node, []):
+            new_energy = energy_so_far + step_energy
+            if new_energy > budget:
+                continue
+
+            rem_energy_lb = min_energy_to_goal.get(nbr, float("inf"))
+            # If even optimistic remaining energy breaks budget, prune.
+            if new_energy + rem_energy_lb > budget:
+                continue
+
+            new_dist = g + step_dist
+            node_state_ids = nondominated_state_ids_by_node[nbr]
+
+            if is_dominated(path_states, node_state_ids, new_dist, new_energy):
+                continue
+
+            nondominated_state_ids_by_node[nbr] = remove_dominated(
+                path_states, node_state_ids, new_dist, new_energy
+            )
+
+            h = min_dist_to_goal.get(nbr, float("inf"))
+            # Unreachable-to-goal nodes provide no valid completion.
+            if h == float("inf"):
+                continue
+
+            new_id = len(path_states)
+            path_states.append(
+                {
+                    "node": nbr,
+                    "dist": new_dist,
+                    "energy": new_energy,
+                    "parent": state_id,
+                    "alive": True,
+                }
+            )
+            nondominated_state_ids_by_node[nbr].append(new_id)
+            # Standard A* push with f = g + h.
+            heapq.heappush(pq, (new_dist + h, new_dist, new_id))
+
+    return None, None, None
 
 
 def format_submission_path(path):
+    """Render output path as S -> ... -> T."""
     if len(path) >= 2:
         return ["S"] + path[1:-1] + ["T"]
     return path
 
 
-def astar_energy_constrained(G, Dist, Cost, Coord, start, goal, budget):
-    # PQ entries: (f, g, node, energy_used)
-    h0 = euclidean_heuristic(Coord, start, goal)
-    pq = []
-    heapq.heappush(pq, (h0, 0.0, start, 0))
-
-    # Best g for each expanded state (node, energy_used)
-    best_g = {(start, 0): 0.0}
-
-    # Parent pointers: parent[(node, energy)] = (prev_node, prev_energy)
-    parent = {}
-
-    while pq:
-        f, g, node, energy_used = heapq.heappop(pq)
-        state = (node, energy_used)
-
-        # Skip stale PQ entries
-        if g != best_g.get(state, float("inf")):
-            continue
-
-        # Goal reached
-        if node == goal:
-            path = reconstruct_path(parent, (start, 0), state)
-            return path, g, energy_used
-
-        for nbr in G[node]:
-            edge_key = f"{node},{nbr}"
-            step_dist = Dist[edge_key]
-            step_energy = Cost[edge_key]
-
-            new_energy = energy_used + step_energy
-            if new_energy > budget:
-                continue
-
-            new_g = g + step_dist
-            new_state = (nbr, new_energy)
-
-            if new_g < best_g.get(new_state, float("inf")):
-                best_g[new_state] = new_g
-                parent[new_state] = state
-
-                h = euclidean_heuristic(Coord, nbr, goal)
-                heapq.heappush(pq, (new_g + h, new_g, nbr, new_energy))
-
-    return None, None, None
-
-
-if __name__ == "__main__":
-    G, Dist, Cost, Coord = load_instance()
-
-    start = "1"
-    goal = "50"
-    BUDGET = 287932  # Tasks 2 & 3 energy budget
-
+def run_task3(start="1", goal="50", budget=287932, print_output=True):
+    """Execute Task 3 end-to-end and optionally print assignment-style output."""
+    G, Dist, Cost = load_instance()
     path, best_distance, best_energy = astar_energy_constrained(
-        G, Dist, Cost, Coord, start, goal, BUDGET
+        G, Dist, Cost, start, goal, budget
     )
 
     if path is None:
-        print("No feasible path found within energy budget.")
-    else:
-        display_path = format_submission_path(path)
+        if print_output:
+            print("No feasible path found within energy budget.")
+        return None
+
+    display_path = format_submission_path(path)
+    result = {
+        "path": path,
+        "display_path": display_path,
+        "distance": best_distance,
+        "energy": best_energy,
+        "budget": budget,
+    }
+
+    if print_output:
         print(f"Shortest path: {'->'.join(display_path)}.")
         print(f"Shortest distance: {best_distance}.")
         print(f"Total energy cost: {best_energy}.")
+
+    return result
+
+
+if __name__ == "__main__":
+    run_task3()
