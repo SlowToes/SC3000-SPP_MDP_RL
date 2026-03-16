@@ -5,12 +5,12 @@ import task3_old
 
 
 def run_task2_old():
-    """Run old Task 2 baseline."""
+    """Run old Task 2."""
     task2_old.run_task2_old()
 
 
 def run_task3_old():
-    """Run old Task 3 baseline."""
+    """Run old Task 3."""
     task3_old.run_task3_old()
 
 

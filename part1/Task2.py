@@ -73,7 +73,7 @@ def is_dominated(path_states, state_ids, new_dist, new_energy):
 def remove_dominated(path_states, state_ids, new_dist, new_energy):
     """Deactivate states dominated by the candidate state and keep survivors.
 
-    This maintains a compact frontier per node and prevents unnecessary
+    This maintains a frontier for each node and prevents unnecessary
     expansions while preserving all potentially optimal trade-offs.
     """
     kept = []
@@ -105,13 +105,12 @@ def ucs_energy_constrained(G, Dist, Cost, start, goal, budget):
     """Find minimum-distance path subject to an energy budget
     using UCS with dominated states pruning.
 
-    A single best-distance per node is insufficient under constraints. This
-    algorithm keeps multiple nondominated states per node and prunes states
-    that are infeasible or dominated.
+    This algorithm keeps multiple nondominated states per node
+    and prunes states that are infeasible or dominated.
     """
     adj, rev_energy = build_graphs(G, Dist, Cost)
     min_energy_to_goal = reverse_dijkstra_to_goal(goal, rev_energy)
-    # Immediate infeasibility check before running the full search.
+    # Immediate infeasibility check before running the full search
     if start not in min_energy_to_goal or min_energy_to_goal[start] > budget:
         return None, None, None
 
@@ -120,64 +119,64 @@ def ucs_energy_constrained(G, Dist, Cost, start, goal, budget):
     pq = []
 
     start_id = 0
-    # A state is one partial-path summary: (node, distance, energy, parent).
+    # A state is one partial-path summary: (node, distance, energy, parent)
     path_states.append(
         {"node": start, "dist": 0.0, "energy": 0, "parent": None, "alive": True}
     )
     nondominated_state_ids_by_node[start].append(start_id)
-    # Priority by distance keeps UCS behavior among feasible states.
+    # Priority by distance keeps UCS behavior among feasible states
     heapq.heappush(pq, (0.0, start_id))
 
     while pq:
         dist_so_far, state_id = heapq.heappop(pq)
         if not path_states[state_id]["alive"]:
             continue
-        # Skip stale heap entries if this state was improved/replaced earlier.
+        # Skip stale heap entries if this state was improved/replaced earlier
         if dist_so_far != path_states[state_id]["dist"]:
             continue
 
         node = path_states[state_id]["node"]
         energy_so_far = path_states[state_id]["energy"]
 
-        # First time goal is popped gives the optimal feasible distance.
+        # First time goal is popped gives the optimal feasible distance
         if node == goal:
             path = reconstruct_path(path_states, state_id)
             return path, dist_so_far, energy_so_far
 
-        for nbr, step_dist, step_energy in adj.get(node, []):
+        for neighbour, step_dist, step_energy in adj.get(node, []):
             new_energy = energy_so_far + step_energy
-            # Hard budget check.
+            # Hard budget check
             if new_energy > budget:
                 continue
 
-            rem_energy_lb = min_energy_to_goal.get(nbr, float("inf"))
-            # Lower-bound pruning: cannot possibly satisfy budget downstream.
+            rem_energy_lb = min_energy_to_goal.get(neighbour, float("inf"))
+            # Lower-bound pruning: cannot possibly satisfy budget downstream
             if new_energy + rem_energy_lb > budget:
                 continue
 
             new_dist = dist_so_far + step_dist
-            node_state_ids = nondominated_state_ids_by_node[nbr]
+            node_state_ids = nondominated_state_ids_by_node[neighbour]
 
-            # Existing state already better (or equal) in both dimensions.
+            # Existing state already better (or equal) in both dimensions
             if is_dominated(path_states, node_state_ids, new_dist, new_energy):
                 continue
 
-            # Remove states made obsolete by this better trade-off.
-            nondominated_state_ids_by_node[nbr] = remove_dominated(
+            # Remove states made obsolete by this better trade-off
+            nondominated_state_ids_by_node[neighbour] = remove_dominated(
                 path_states, node_state_ids, new_dist, new_energy
             )
 
             new_id = len(path_states)
             path_states.append(
                 {
-                    "node": nbr,
+                    "node": neighbour,
                     "dist": new_dist,
                     "energy": new_energy,
                     "parent": state_id,
                     "alive": True,
                 }
             )
-            nondominated_state_ids_by_node[nbr].append(new_id)
+            nondominated_state_ids_by_node[neighbour].append(new_id)
             heapq.heappush(pq, (new_dist, new_id))
 
     return None, None, None
@@ -191,13 +190,13 @@ def format_submission_path(path):
 
 
 def run_task2(start="1", goal="50", budget=287932, print_output=True):
-    """Execute Task 2 end-to-end and optionally print assignment-style output."""
+    """Execute Task 2."""
     G, Dist, Cost = load_instance()
     path, best_distance, best_energy = ucs_energy_constrained(
         G, Dist, Cost, start, goal, budget
     )
 
-    if path is None:
+    if path is None:  # No path found
         if print_output:
             print("No feasible path found within energy budget.")
         return None

@@ -53,8 +53,8 @@ def astar_energy_constrained_euclidean(graph, distance, energy, coord, start, go
             path = reconstruct_path(parent, state)
             return path, g_score, energy_used
 
-        for nbr in graph.get(node, []):
-            edge_key = f"{node},{nbr}"
+        for neighbour in graph.get(node, []):
+            edge_key = f"{node},{neighbour}"
             step_dist = distance[edge_key]
             step_energy = energy[edge_key]
 
@@ -63,11 +63,11 @@ def astar_energy_constrained_euclidean(graph, distance, energy, coord, start, go
                 continue
 
             new_g = g_score + step_dist
-            new_state = (nbr, new_energy)
+            new_state = (neighbour, new_energy)
             if new_g < g_best_by_state.get(new_state, float("inf")):
                 g_best_by_state[new_state] = new_g
                 parent[new_state] = state
-                h = euclidean_heuristic(nbr, goal, coord)
+                h = euclidean_heuristic(neighbour, goal, coord)
                 heapq.heappush(pq, (new_g + h, new_g, new_state))
 
     return None, None, None
@@ -81,13 +81,13 @@ def format_submission_path(path):
 
 
 def run_task3_old(start="1", goal="50", budget=287932, print_output=True):
-    """Run Task 3 old baseline (A* with Euclidean heuristic)."""
+    """Run Task 3 old."""
     graph, distance, energy, coord = load_instance()
     path, best_distance, best_energy = astar_energy_constrained_euclidean(
         graph, distance, energy, coord, start, goal, budget
     )
 
-    if path is None:
+    if path is None:  # No path found
         if print_output:
             print("No feasible path found within energy budget.")
         return None

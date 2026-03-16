@@ -97,20 +97,15 @@ def reconstruct_path(path_states, goal_state_id):
 
 
 def astar_energy_constrained(G, Dist, Cost, start, goal, budget):
-    """A* search with an energy budget using nondominated states per node.
-
-    Compared with UCS in Task 2, A* adds an admissible distance heuristic to
-    prioritize states that are likely closer to the goal, reducing expansions
-    while preserving optimality under the same energy constraint.
-    """
+    """A* search with an energy budget using nondominated states per node."""
     adj, rev_energy, rev_dist = build_graphs(G, Dist, Cost)
 
     min_energy_to_goal = reverse_dijkstra_to_goal(goal, rev_energy)
-    # Fast infeasibility check: cannot satisfy budget even with best-case energy.
+    # Fast infeasibility check: cannot satisfy budget even with best-case energy
     if start not in min_energy_to_goal or min_energy_to_goal[start] > budget:
         return None, None, None
 
-    # Strong admissible heuristic: unconstrained shortest distance to goal.
+    # Strong admissible heuristic: unconstrained shortest distance to goal
     min_dist_to_goal = reverse_dijkstra_to_goal(goal, rev_dist)
     if start not in min_dist_to_goal:
         return None, None, None
@@ -125,14 +120,14 @@ def astar_energy_constrained(G, Dist, Cost, start, goal, budget):
     )
     nondominated_state_ids_by_node[start].append(start_id)
     h0 = min_dist_to_goal[start]
-    # Priority tuple: (f = g + h, g, state_id) for deterministic tie handling.
+    # Priority tuple: (f = g + h, g, state_id) for deterministic tie handling
     heapq.heappush(pq, (h0, 0.0, start_id))
 
     while pq:
         f, g, state_id = heapq.heappop(pq)
         if not path_states[state_id]["alive"]:
             continue
-        # Drop stale queue entries for states already superseded.
+        # Drop stale queue entries for states already replaced by a better one
         if g != path_states[state_id]["dist"]:
             continue
 
@@ -143,43 +138,43 @@ def astar_energy_constrained(G, Dist, Cost, start, goal, budget):
             path = reconstruct_path(path_states, state_id)
             return path, g, energy_so_far
 
-        for nbr, step_dist, step_energy in adj.get(node, []):
+        for neighbour, step_dist, step_energy in adj.get(node, []):
             new_energy = energy_so_far + step_energy
             if new_energy > budget:
                 continue
 
-            rem_energy_lb = min_energy_to_goal.get(nbr, float("inf"))
-            # If even optimistic remaining energy breaks budget, prune.
+            rem_energy_lb = min_energy_to_goal.get(neighbour, float("inf"))
+            # If even optimistic remaining energy breaks budget, prune
             if new_energy + rem_energy_lb > budget:
                 continue
 
             new_dist = g + step_dist
-            node_state_ids = nondominated_state_ids_by_node[nbr]
+            node_state_ids = nondominated_state_ids_by_node[neighbour]
 
             if is_dominated(path_states, node_state_ids, new_dist, new_energy):
                 continue
 
-            nondominated_state_ids_by_node[nbr] = remove_dominated(
+            nondominated_state_ids_by_node[neighbour] = remove_dominated(
                 path_states, node_state_ids, new_dist, new_energy
             )
 
-            h = min_dist_to_goal.get(nbr, float("inf"))
-            # Unreachable-to-goal nodes provide no valid completion.
+            h = min_dist_to_goal.get(neighbour, float("inf"))
+            # Unreachable-to-goal nodes provide no valid completion
             if h == float("inf"):
                 continue
 
             new_id = len(path_states)
             path_states.append(
                 {
-                    "node": nbr,
+                    "node": neighbour,
                     "dist": new_dist,
                     "energy": new_energy,
                     "parent": state_id,
                     "alive": True,
                 }
             )
-            nondominated_state_ids_by_node[nbr].append(new_id)
-            # Standard A* push with f = g + h.
+            nondominated_state_ids_by_node[neighbour].append(new_id)
+            # Standard A* push with f = g + h
             heapq.heappush(pq, (new_dist + h, new_dist, new_id))
 
     return None, None, None
@@ -193,13 +188,13 @@ def format_submission_path(path):
 
 
 def run_task3(start="1", goal="50", budget=287932, print_output=True):
-    """Execute Task 3 end-to-end and optionally print assignment-style output."""
+    """Execute Task 3."""
     G, Dist, Cost = load_instance()
     path, best_distance, best_energy = astar_energy_constrained(
         G, Dist, Cost, start, goal, budget
     )
 
-    if path is None:
+    if path is None:  # No path found
         if print_output:
             print("No feasible path found within energy budget.")
         return None

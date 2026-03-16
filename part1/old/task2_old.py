@@ -25,12 +25,8 @@ def reconstruct_path(parent, end_state):
     return path
 
 
-def dijkstra_energy_constrained_naive(graph, distance, energy, start, goal, budget):
-    """Naive constrained Dijkstra on (node, energy_used) states.
-
-    This implementation does not apply dominance pruning. Each exact
-    `(node, energy_used)` combination is treated as a separate state.
-    """
+def dijkstra_energy_constrained(graph, distance, energy, start, goal, budget):
+    """Constrained Dijkstra on (node, energy_used) states."""
     start_state = (start, 0)
     pq = [(0.0, start_state)]
     best_distance_by_state = {start_state: 0.0}
@@ -49,8 +45,8 @@ def dijkstra_energy_constrained_naive(graph, distance, energy, start, goal, budg
             best_goal_distance = dist_so_far
             best_goal_state = state
 
-        for nbr in graph.get(node, []):
-            edge_key = f"{node},{nbr}"
+        for neighbour in graph.get(node, []):
+            edge_key = f"{node},{neighbour}"
             step_dist = distance[edge_key]
             step_energy = energy[edge_key]
 
@@ -59,13 +55,13 @@ def dijkstra_energy_constrained_naive(graph, distance, energy, start, goal, budg
                 continue
 
             new_dist = dist_so_far + step_dist
-            new_state = (nbr, new_energy)
+            new_state = (neighbour, new_energy)
             if new_dist < best_distance_by_state.get(new_state, float("inf")):
                 best_distance_by_state[new_state] = new_dist
                 parent[new_state] = state
                 heapq.heappush(pq, (new_dist, new_state))
 
-    if best_goal_state is None:
+    if best_goal_state is None:  # No path found
         return None, None, None
 
     path = reconstruct_path(parent, best_goal_state)
@@ -82,13 +78,13 @@ def format_submission_path(path):
 
 
 def run_task2_old(start="1", goal="50", budget=287932, print_output=True):
-    """Run Task 2 old baseline (naive constrained Dijkstra)."""
+    """Run Task 2 old."""
     graph, distance, energy = load_instance()
-    path, best_distance, best_energy = dijkstra_energy_constrained_naive(
+    path, best_distance, best_energy = dijkstra_energy_constrained(
         graph, distance, energy, start, goal, budget
     )
 
-    if path is None:
+    if path is None:  # No path found
         if print_output:
             print("No feasible path found within energy budget.")
         return None

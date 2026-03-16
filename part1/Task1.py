@@ -17,28 +17,28 @@ def uniform_cost_search(graph, distance, start, goal):
     """Run Uniform Cost Search to find the minimum-distance path.
 
     UCS is Dijkstra's algorithm for non-negative edge weights. Since Task 1
-    optimizes only distance, expanding the smallest known distance first
+    optimises only distance, expanding the smallest known distance first
     guarantees the first optimal distance to each node.
     """
-    # Min-heap ordered by total distance from `start` to a frontier node.
+    # Min-heap ordered by total distance from start to a frontier node
     frontier = [(0.0, start)]
-    # Best known distance to each node; used for pruning stale queue entries.
+    # Best known distance to each node, used for pruning stale queue entries
     best_distance = {start: 0.0}
-    # Parent pointers allow full path reconstruction once `goal` is reached.
+    # Parent pointers allow full path reconstruction once goal is reached
     parent = {}
 
     while frontier:
         current_distance, current_node = heapq.heappop(frontier)
 
-        # Ignore outdated heap entries that are worse than the recorded best.
+        # Ignore outdated heap entries that are worse than the recorded best
         if current_distance != best_distance.get(current_node):
             continue
 
-        # Safe early exit
+        # Safe early exit if the current node is the goal
         if current_node == goal:
             break
 
-        # Check whether going from the current node to neighbour gives a shorter path than the currently known distance to neighbour.
+        # Check whether going from the current node to neighbour gives a shorter path than the currently known distance to neighbour
         for neighbour in graph.get(current_node, []):
             edge_key = f"{current_node},{neighbour}"
             step_distance = distance[edge_key]
@@ -87,11 +87,11 @@ def format_submission_path(path):
 
 
 def run_task1(start="1", goal="50", print_output=True):
-    """Execute Task 1 end-to-end and optionally print assignment-style output."""
+    """Execute Task 1."""
     G, Dist, Cost = load_instance()
     distance_dict, parent = uniform_cost_search(G, Dist, start, goal)
 
-    if goal not in distance_dict:
+    if goal not in distance_dict:  # No path found
         if print_output:
             print("No path found.")
         return None

@@ -15,7 +15,7 @@ qfunction = QTable()
 
 # Run the Q-learning algorithm.
 # Use more episodes so convergence is observable in a stochastic environment.
-episode_returns = QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=5000)
+episode_returns = QLearning(gridworld, EpsilonGreedy(), qfunction).execute(episodes=10000)
 
 # Visualise the Q-function.
 gridworld.visualise_q_function(qfunction)
